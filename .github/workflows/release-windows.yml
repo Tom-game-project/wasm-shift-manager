@@ -29,6 +29,12 @@ jobs:
         with:
           targets: x86_64-pc-windows-msvc
 
+      - name: install Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: false
+          gleam-version: '1.15.2'
+
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
@@ -39,6 +45,11 @@ jobs:
         # npm install を実行するディレクトリを指定
         working-directory: .
         run: npm install
+
+      - name: verify Gleam frontend
+        run: |
+          gleam check
+          npm run build
 
       - name: Build and Publish Tauri app
         uses: tauri-apps/tauri-action@v0

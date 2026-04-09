@@ -1,0 +1,48 @@
+name: 'ci'
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  frontend-and-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: false
+          gleam-version: '1.15.2'
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - name: check Gleam frontend
+        run: |
+          gleam check
+          npm run build
+
+      - name: test Rust workspace
+        run: cargo test --workspace

@@ -1820,15 +1820,10 @@ fn ensure_assignment_drafts(
 }
 
 fn has_draft(rule_id: Int, drafts: List(#(Int, AssignmentDraft))) -> Bool {
-  case
-    list.any(drafts, fn(entry) {
-      let #(id, _) = entry
-      id == rule_id
-    })
-  {
-    True -> True
-    False -> False
-  }
+  list.any(drafts, fn(entry) {
+    let #(id, _) = entry
+    id == rule_id
+  })
 }
 
 fn default_assignment_draft(groups: List(StaffGroup)) -> AssignmentDraft {
@@ -2103,19 +2098,14 @@ fn can_generate(model: Model) -> Bool {
   case model.selected_plan {
     NoPlan -> False
     SelectedPlan(_) ->
-      case
-        list.any(model.calendar_grid, fn(entry) {
-          let #(week_key, _) = entry
-          !week_state_is_fixed(week_display_state(
-            model,
-            week_index_for_key(model.calendar_grid, week_key, 0),
-            week_key,
-          ))
-        })
-      {
-        True -> True
-        False -> False
-      }
+      list.any(model.calendar_grid, fn(entry) {
+        let #(week_key, _) = entry
+        !week_state_is_fixed(week_display_state(
+          model,
+          week_index_for_key(model.calendar_grid, week_key, 0),
+          week_key,
+        ))
+      })
   }
 }
 
