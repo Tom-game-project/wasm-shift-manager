@@ -11,14 +11,19 @@ pub fn show_monthly_shift_result_debug_data(monthly_shift_result: &MonthlyShiftR
     // 曜日の表示用ラベル (0=Mon ~ 6=Sun に対応)
     let day_labels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-    for (week_idx, week_opt) in monthly_shift_result.weeks.iter().enumerate() {
+    for (week_idx, week_info) in monthly_shift_result.weeks.iter().enumerate() {
         println!(
             "📅 [Week {}] ------------------------------------------",
             week_idx + 1
         );
 
-        match week_opt {
-            Some(week) => {
+        match week_info.status.as_str() {
+            "Active" => {
+                let Some(week) = week_info.shift.as_ref() else {
+                    println!("   (Active but no shift data)");
+                    continue;
+                };
+
                 for (day_idx, day) in week.days.iter().enumerate() {
                     let label = day_labels.get(day_idx).unwrap_or(&"???");
 
@@ -41,8 +46,11 @@ pub fn show_monthly_shift_result_debug_data(monthly_shift_result: &MonthlyShiftR
                     );
                 }
             }
-            None => {
+            "Skipped" => {
                 println!("   (Skipped)");
+            }
+            other => {
+                println!("   ({other})");
             }
         }
     }

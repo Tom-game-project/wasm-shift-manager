@@ -2,7 +2,7 @@ mod tools;
 
 #[cfg(test)]
 mod command_tests {
-    use shift_manager_tauri_lib::application::time::calculate_abs_week;
+    use shift_manager_tauri_lib::application::time::{calculate_abs_week, calculate_weeks_in_month};
     use sqlx::sqlite::SqlitePoolOptions;
     use sqlx::SqlitePool;
     use tauri::Manager;
@@ -96,14 +96,15 @@ mod command_tests {
         assert_eq!(assignment.target_member_index, 0); // 田中さんのインデックス
 
         // 6. [コマンド実行] カレンダー作成とタイムラインの追記
-        // base=2920 からスタート
-        create_calendar(plan_id, 2920, 0, state.clone())
+        let abs_week = calculate_abs_week(2026, 0, 1).unwrap();
+
+        create_calendar(plan_id, abs_week, 0, state.clone())
             .await
             .unwrap();
 
-        // 2920週から 3週間分のルールをセット (Active, Active, Skipped)
+        // 対象月の先頭週から 3週間分のルールをセット (Active, Active, Skipped)
         let timeline_data = vec![Some(rule_id), Some(rule_id), None];
-        append_timeline(plan_id, 2920, timeline_data, state.clone())
+        append_timeline(plan_id, abs_week, timeline_data, state.clone())
             .await
             .unwrap();
 
@@ -113,11 +114,34 @@ mod command_tests {
             .await
             .unwrap();
 
-        // 検証: ダミーデータとして 6週間分 返ってくること
-        assert_eq!(monthly_shift.weeks.len(), 6);
-        // 検証: ダミーの中身確認
-        let first_week = monthly_shift.weeks[0].as_ref().unwrap();
-        assert_eq!(first_week.days[0].morning[0], "Staff A");
+        // 検証: 月表示の週数はカレンダー計算と一致すること
+        assert_eq!(
+            monthly_shift.weeks.len(),
+            calculate_weeks_in_month(2026, 0) as usize
+        );
+        assert_eq!(
+            monthly_shift
+                .weeks
+                .iter()
+                .map(|week| week.status.as_str())
+                .collect::<Vec<_>>(),
+            vec!["Active", "Active", "Skipped", "Pending", "Pending"]
+        );
+        let first_week = &monthly_shift.weeks[0];
+        assert_eq!(first_week.status, "Active");
+        let first_week_shift = first_week
+            .shift
+            .as_ref()
+            .expect("active week should include shift data");
+        assert_eq!(first_week_shift.days.len(), 7);
+        assert_eq!(first_week_shift.days[0].morning, vec!["田中".to_string()]);
+        assert!(first_week_shift.days[0].afternoon.is_empty());
+
+        let second_week_shift = monthly_shift.weeks[1]
+            .shift
+            .as_ref()
+            .expect("second active week should include shift data");
+        assert_eq!(second_week_shift.days[0].morning, vec!["佐藤".to_string()]);
     }
 
     #[tokio::test]
@@ -138,7 +162,7 @@ mod command_tests {
         let member1_id = add_staff_member(group_id, "田中".to_string(), state.clone())
             .await
             .unwrap();
-        let member2_id = add_staff_member(group_id, "佐藤".to_string(), state.clone())
+        let _member2_id = add_staff_member(group_id, "佐藤".to_string(), state.clone())
             .await
             .unwrap();
         let rule_id = add_weekly_rule(plan_id, "標準ルール".to_string(), state.clone())
@@ -181,6 +205,29 @@ mod command_tests {
 
         tools::show_output::show_monthly_shift_result_debug_data(&monthly_shift);
 
-        // assert_eq!(monthly_shift.weeks.len(), 6);
+        assert_eq!(
+            monthly_shift.weeks.len(),
+            calculate_weeks_in_month(2026, 0) as usize
+        );
+        assert_eq!(
+            monthly_shift
+                .weeks
+                .iter()
+                .map(|week| week.status.as_str())
+                .collect::<Vec<_>>(),
+            vec!["Active", "Active", "Skipped", "Pending", "Pending"]
+        );
+
+        let first_week_shift = monthly_shift.weeks[0]
+            .shift
+            .as_ref()
+            .expect("first active week should include shift data");
+        assert_eq!(first_week_shift.days[1].morning, vec!["田中".to_string()]);
+
+        let second_week_shift = monthly_shift.weeks[1]
+            .shift
+            .as_ref()
+            .expect("second active week should include shift data");
+        assert_eq!(second_week_shift.days[1].morning, vec!["佐藤".to_string()]);
     }
 }
