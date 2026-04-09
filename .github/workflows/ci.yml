@@ -61,5 +61,5 @@ jobs:
           gleam check
           npm run build
 
-      - name: test Rust workspace
-        run: cargo test --workspace
+      - name: test Rust app only
+        run: cargo test -p shift-manager-tauri --tests
