@@ -1,0 +1,65 @@
+name: 'ci'
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  frontend-and-rust:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: install Linux system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            libglib2.0-dev \
+            libgtk-3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            pkg-config \
+            wget
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install Gleam
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: false
+          gleam-version: '1.15.2'
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install frontend dependencies
+        run: npm install
+
+      - name: check Gleam frontend
+        run: |
+          gleam check
+          npm run build
+
+      - name: test Rust app only
+        run: cargo test -p shift-manager-tauri --tests

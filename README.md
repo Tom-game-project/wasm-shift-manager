@@ -18,7 +18,11 @@ cargo tauri build
 ## ディレクトリ構成
 
 - src
-  - フロントエンド（Vanilla TS）
+  - フロントエンド（Gleam + Lustre）
+- main.js
+  - Vite エントリポイント
+- ffi.js
+  - Tauri 呼び出し境界
 - src-tauri
   - Tauri（Rust）
 - work_shift_dayoff_logic

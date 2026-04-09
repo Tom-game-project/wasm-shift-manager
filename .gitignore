@@ -4,6 +4,7 @@ dist-ssr/
 node_modules/
 tests_files/
 build.js
+build/
 *.db
 *.local
 

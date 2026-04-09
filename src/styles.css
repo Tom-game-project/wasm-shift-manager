@@ -39,10 +39,10 @@ body {
   padding: 0;
   background-color: var(--bg-main);
   color: var(--text-main);
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: auto;
 }
 
 /* Header */
@@ -128,15 +128,15 @@ body {
 /* Layout */
 .main-viewport {
   flex: 1;
-  overflow: hidden;
+  overflow: auto;
   position: relative;
   padding: 1.5rem;
 }
 
 .view-section {
   display: none;
-  height: 100%;
-  overflow-y: auto;
+  min-height: 100%;
+  overflow: visible;
 }
 
 .view-section.active-view {
@@ -147,6 +147,10 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 2rem;
+}
+
+.app-shell {
+  min-height: 100vh;
 }
 
 /* Common Components */
@@ -314,6 +318,19 @@ body {
   border-right: none;
 }
 
+.day-number {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.day-shifts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* Switch Toggle (Cleaner) */
 .switch {
   position: relative;
@@ -426,6 +443,15 @@ input:disabled+.slider.fixed-skip {
   flex-direction: column;
 }
 
+.config-card {
+  padding: 20px;
+}
+
+.calendar-settings-panel {
+  padding: 20px;
+  margin-top: 20px;
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -449,6 +475,114 @@ input:disabled+.slider.fixed-skip {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.item-row:last-child {
+  border-bottom: none;
+}
+
+.item-title {
+  margin: 0;
+  color: var(--text-main);
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.assignment-builder {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 14px;
+}
+
+.assignment-builder-modal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.rule-matrix {
+  display: grid;
+  grid-template-columns: 72px repeat(7, minmax(0, 1fr));
+  gap: 1px;
+  background: #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.rule-matrix-header,
+.rule-matrix-label,
+.rule-matrix-cell,
+.rule-matrix-corner {
+  background: white;
+  padding: 10px;
+}
+
+.rule-matrix-header,
+.rule-matrix-corner {
+  background: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.rule-matrix-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.rule-matrix-cell {
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.rule-matrix-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.rule-matrix-add {
+  margin-top: auto;
+}
+
+.rule-assignment-chip {
+  width: 100%;
+  justify-content: flex-start;
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.rule-assignment-chip:hover {
+  background: #ffe4e6;
 }
 
 .group-card {
@@ -476,16 +610,40 @@ input:disabled+.slider.fixed-skip {
 
 .shift-badge {
   font-size: 0.75em;
-  padding: 2px 8px;
+  padding: 6px 8px;
   border-radius: 12px;
   margin-bottom: 4px;
   font-weight: 500;
-  display: inline-block;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   white-space: normal;
 }
 
 .shift-name {
   white-space: nowrap;
+}
+
+.shift-badge-label {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.shift-badge-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.shift-name-pill {
+  margin: 0;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  font-size: 0.72rem;
+  line-height: 1.3;
 }
 
 .shift-badge.morning {
@@ -527,6 +685,37 @@ input:disabled+.slider.fixed-skip {
   font-weight: 600;
   color: var(--text-muted);
   font-size: 0.85em;
+}
+
+@media (max-width: 900px) {
+  .assignment-builder {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .assignment-builder-modal {
+    grid-template-columns: 1fr;
+  }
+
+  .calendar-controls-bar,
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .item-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .item-actions {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .rule-matrix {
+    grid-template-columns: 56px repeat(7, minmax(92px, 1fr));
+    overflow-x: auto;
+  }
 }
 
 
@@ -578,6 +767,23 @@ input:disabled+.slider.fixed-skip {
   transform: scale(0.98);
   animation: popIn 0.15s 0.05s forwards;
   border: 1px solid #e2e8f0;
+}
+
+.modal-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 16px;
+}
+
+.modal-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.assignment-modal {
+  width: 560px;
 }
 
 @keyframes popIn {
